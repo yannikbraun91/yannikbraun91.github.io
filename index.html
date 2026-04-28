@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diaper Tower — Stack diapers. Chase landmarks.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky: #87CEEB;
+    --grass: #4CAF50;
+    --grass-dark: #2e7d32;
+    --diaper: #fff9f0;
+    --diaper-border: #261E33;
+    --accent: #8C33E6;
+    --accent-light: #B273FF;
+    --accent-cta: #26BF66;
+    --accent2: #ffd166;
+    --text: #1a1a1a;
+    --text-muted: #555;
+    --white: #fff;
+    --card-bg: #fffdf9;
+    --card-border: #e8e0d0;
+    --badge-bg: #fff8e1;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--sky);
+    color: var(--text);
+    overflow-x: hidden;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, #b8e4f9 0%, #87CEEB 50%, #a8d5a2 85%, #4CAF50 100%);
+    overflow: hidden;
+    padding: 2rem 1rem 6rem;
+  }
+
+  /* clouds */
+  .cloud {
+    position: absolute;
+    background: white;
+    border-radius: 50px;
+    opacity: 0.85;
+  }
+  .cloud::before, .cloud::after {
+    content: '';
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+  }
+  .cloud-1 { width: 120px; height: 40px; top: 12%; left: 8%; animation: drift 18s linear infinite; }
+  .cloud-1::before { width: 60px; height: 60px; top: -30px; left: 15px; }
+  .cloud-1::after { width: 40px; height: 40px; top: -20px; left: 50px; }
+  .cloud-2 { width: 80px; height: 28px; top: 22%; right: 12%; animation: drift 24s linear infinite reverse; }
+  .cloud-2::before { width: 40px; height: 40px; top: -20px; left: 10px; }
+  .cloud-2::after { width: 30px; height: 30px; top: -12px; left: 35px; }
+  .cloud-3 { width: 100px; height: 34px; top: 8%; left: 55%; animation: drift 20s linear infinite; }
+  .cloud-3::before { width: 50px; height: 50px; top: -25px; left: 12px; }
+  .cloud-3::after { width: 35px; height: 35px; top: -15px; left: 48px; }
+  @keyframes drift { from { transform: translateX(-30px); } to { transform: translateX(30px); } }
+
+  /* grass hills */
+  .grass-hill {
+    position: absolute;
+    bottom: 0;
+    left: -5%;
+    width: 110%;
+    height: 120px;
+    background: var(--grass);
+    border-radius: 60% 60% 0 0;
+  }
+
+  /* tower */
+  .tower-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 3rem;
+    padding: 0 20px 51px; /* 51px bottom matches the last block's overlap offset */
+    animation: sway 4s ease-in-out infinite;
+    transform-origin: bottom center;
+  }
+  @keyframes sway {
+    0%, 100% { transform: rotate(-1deg); }
+    50% { transform: rotate(1deg); }
+  }
+
+  .diaper-block {
+    width: 100px;
+    display: block;
+    position: relative;
+    margin-bottom: -51px; /* 65% overlap matching towerOverlap = 0.65 in the app */
+    filter: drop-shadow(2px 2px 0 rgba(38, 30, 51, 0.35));
+  }
+  /* Higher blocks must paint in front of lower ones */
+  .diaper-block:nth-child(1) { z-index: 7; }
+  .diaper-block:nth-child(2) { z-index: 6; }
+  .diaper-block:nth-child(3) { z-index: 5; }
+  .diaper-block:nth-child(4) { z-index: 4; }
+  .diaper-block:nth-child(5) { z-index: 3; }
+  .diaper-block:nth-child(6) { z-index: 2; }
+  .diaper-block:nth-child(7) { z-index: 1; }
+  .diaper-block:nth-child(odd) { transform: translateX(3px); }
+  .diaper-block:nth-child(even) { transform: translateX(-3px); }
+
+  .badge-icon {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
+    flex-shrink: 0;
+  }
+
+  /* headline */
+  .hero-title {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: clamp(3rem, 10vw, 5.5rem);
+    letter-spacing: -1px;
+    color: var(--white);
+    text-shadow: 4px 4px 0 var(--diaper-border), -1px -1px 0 var(--diaper-border);
+    line-height: 1;
+    text-align: center;
+    position: relative;
+    z-index: 2;
+  }
+  .hero-sub {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: clamp(1.1rem, 3vw, 1.5rem);
+    color: var(--accent2);
+    letter-spacing: 0.5px;
+    text-shadow: 2px 2px 0 var(--diaper-border);
+    margin: 0.4rem 0 1.5rem;
+    text-align: center;
+  }
+
+  .app-store-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--accent);
+    color: var(--white);
+    text-decoration: none;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 14px 28px;
+    border-radius: 14px;
+    border: 3px solid var(--diaper-border);
+    box-shadow: 4px 4px 0 var(--diaper-border);
+    transition: transform 0.1s, box-shadow 0.1s;
+    position: relative;
+    z-index: 2;
+  }
+  .app-store-btn:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--diaper-border); }
+  .app-store-btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--diaper-border); }
+  .app-store-btn svg { width: 22px; height: 22px; fill: white; }
+
+  /* ── SECTIONS ── */
+  section {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 5rem 1.5rem;
+  }
+
+  .section-label {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.85rem;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  .section-title {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: clamp(2rem, 6vw, 3rem);
+    letter-spacing: -0.5px;
+    color: var(--text);
+    line-height: 1.1;
+    margin-bottom: 1.2rem;
+  }
+  .section-body {
+    font-size: 1.05rem;
+    line-height: 1.75;
+    color: var(--text-muted);
+    max-width: 580px;
+  }
+
+  /* features grid */
+  .features {
+    background: #fffdf9;
+    border-top: 3px solid var(--diaper-border);
+    border-bottom: 3px solid var(--diaper-border);
+  }
+  .features section { padding: 4rem 1.5rem; }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2.5rem;
+  }
+  .feature-card {
+    background: var(--white);
+    border: 2.5px solid var(--diaper-border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 4px 4px 0 var(--diaper-border);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .feature-card:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--diaper-border); }
+  .feature-icon { font-size: 2rem; margin-bottom: 0.75rem; }
+  .feature-title { font-weight: 700; font-size: 1rem; margin-bottom: 0.4rem; }
+  .feature-desc { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; }
+
+  /* badges section */
+  .badges-bg {
+    background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    border-top: 3px solid var(--diaper-border);
+    border-bottom: 3px solid var(--diaper-border);
+    position: relative;
+    overflow: hidden;
+  }
+  .stars {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .star {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle 3s ease-in-out infinite;
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.2; }
+    50% { opacity: 1; }
+  }
+
+  .badges-bg .section-title { color: white; }
+  .badges-bg .section-body { color: rgba(255,255,255,0.65); }
+  .badges-bg .section-label { color: var(--accent2); }
+
+  .badge-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+    margin-top: 2.5rem;
+  }
+  .badge-item {
+    background: rgba(255,255,255,0.06);
+    border: 1.5px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .badge-emoji { font-size: 1.5rem; }
+  .badge-name { font-weight: 700; font-size: 0.85rem; color: white; }
+  .badge-height { font-size: 0.75rem; color: rgba(255,255,255,0.5); }
+
+  /* support */
+  .support-card {
+    background: var(--card-bg);
+    border: 2.5px solid var(--diaper-border);
+    border-radius: 20px;
+    padding: 2.5rem;
+    box-shadow: 5px 5px 0 var(--diaper-border);
+    margin-top: 2rem;
+  }
+  .support-card h3 { font-weight: 700; font-size: 1.1rem; margin-bottom: 0.5rem; }
+  .support-card p { font-size: 0.95rem; color: var(--text-muted); line-height: 1.65; margin-bottom: 1rem; }
+  .support-link {
+    display: inline-block;
+    background: var(--accent-cta);
+    color: white;
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: 2px solid var(--diaper-border);
+    box-shadow: 3px 3px 0 var(--diaper-border);
+    text-decoration: none;
+    transition: transform 0.1s;
+  }
+  .support-link:hover { transform: translate(-1px, -1px); }
+
+  /* footer */
+  footer {
+    text-align: center;
+    padding: 2rem 1rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    border-top: 2px solid var(--card-border);
+    background: var(--card-bg);
+  }
+
+@media (max-width: 480px) {
+    .badge-list { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── HERO ── -->
+<header class="hero">
+  <div class="cloud cloud-1"></div>
+  <div class="cloud cloud-2"></div>
+  <div class="cloud cloud-3"></div>
+  <div class="grass-hill"></div>
+  <div class="tower-wrap" aria-hidden="true">
+    <img src="assets/diaper-block.png" class="diaper-block" alt="">
+    <img src="assets/diaper-block.png" class="diaper-block" alt="">
+    <img src="assets/diaper-block.png" class="diaper-block" alt="">
+    <img src="assets/diaper-block.png" class="diaper-block" alt="">
+    <img src="assets/diaper-block.png" class="diaper-block" alt="">
+    <img src="assets/diaper-block.png" class="diaper-block" alt="">
+    <img src="assets/diaper-block.png" class="diaper-block" alt="">
+  </div>
+
+  <h1 class="hero-title">Diaper Tower</h1>
+  <p class="hero-sub">Stack diapers. Chase landmarks.</p>
+
+  <a class="app-store-btn" href="#" aria-label="Download on the App Store">
+    <svg viewBox="0 0 814 1000" xmlns="http://www.w3.org/2000/svg"><path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-57.8-155.5-127.4C46 790.7 0 663 0 541.8c0-207.5 135.4-317.3 269-317.3 99.8 0 183 64.6 247 64.6 60.8 0 155.6-68.1 270.6-68.1zm-174.5-209c43-50.8 72.5-120.8 72.5-190.8 0-9.5-.8-19.2-2.6-26.6-68.7 2.6-150 46.5-198.4 104.4-37.7 43.4-72.6 114.2-72.6 185.9 0 10.3 1.3 20.7 2.1 24 4.5.6 11.5 1.6 18.5 1.6 61.5 0 138.1-41.5 180.5-98.5z"/></svg>
+    Download on the App Store
+  </a>
+</header>
+
+<!-- ── WHAT IT IS ── -->
+<section>
+  <p class="section-label">What is it?</p>
+  <h2 class="section-title">Every diaper change<br>builds something epic.</h2>
+  <p class="section-body">
+    Diaper Tower turns the most unglamorous part of parenting into a surprisingly satisfying game.
+    Log a diaper, add a comic-book block to your tower — and watch it grow past a basketball hoop,
+    a giraffe, Big Ben, and the Eiffel Tower. One change at a time.
+  </p>
+</section>
+
+<!-- ── FEATURES ── -->
+<div class="features">
+  <section>
+    <p class="section-label">Features</p>
+    <h2 class="section-title">Everything you need.<br>Nothing you don't.</h2>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🧱</div>
+        <div class="feature-title">Visual Diaper Tower</div>
+        <div class="feature-desc">Each logged diaper becomes a comic-book block with thick outlines and a gentle sway animation. A real-world meter scale shows your exact height.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🌳</div>
+        <div class="feature-title">Backyard Scenery</div>
+        <div class="feature-desc">A hand-drawn backyard with animated flies, sky gradients, and a trusty trash can. Dark mode turns it into a moonlit night with twinkling stars.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📋</div>
+        <div class="feature-title">Diaper Log</div>
+        <div class="feature-desc">Browse all changes grouped by day. Edit time, size, wet/dirty status, and notes for any entry.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <div class="feature-title">Statistics</div>
+        <div class="feature-desc">14-day change chart, daily averages, and weekly trends — automatically built from your logged entries.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📦</div>
+        <div class="feature-title">Inventory Tracking</div>
+        <div class="feature-desc">Scan a diaper package barcode or enter manually. The count decrements with each log and warns when stock runs low.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">👶</div>
+        <div class="feature-title">Multi-Child Support</div>
+        <div class="feature-desc">Track multiple children, each with their own tower, badge history, and entries. Inventory is shared across all children.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⌚</div>
+        <div class="feature-title">Apple Watch</div>
+        <div class="feature-desc">Log a change directly from your wrist. The companion app syncs instantly via WatchConnectivity.</div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ── BADGES ── -->
+<div class="badges-bg">
+  <div class="stars" aria-hidden="true" id="stars"></div>
+  <section>
+    <p class="section-label">Milestone Badges</p>
+    <h2 class="section-title">11 landmarks to chase.</h2>
+    <p class="section-body">
+      Upcoming landmarks appear as silhouettes beside your tower so you always know what's next.
+    </p>
+    <div class="badge-list">
+      <div class="badge-item"><img src="assets/basketball_hoop.png" class="badge-icon" alt="Basketball Hoop"><div><div class="badge-name">Basketball Hoop</div><div class="badge-height">3.05 m</div></div></div>
+      <div class="badge-item"><img src="assets/giraffe.png" class="badge-icon" alt="Giraffe"><div><div class="badge-name">Giraffe</div><div class="badge-height">5.8 m</div></div></div>
+      <div class="badge-item"><img src="assets/telephone_pole.png" class="badge-icon" alt="Telephone Pole"><div><div class="badge-name">Telephone Pole</div><div class="badge-height">10 m</div></div></div>
+      <div class="badge-item"><img src="assets/windmill.png" class="badge-icon" alt="Windmill"><div><div class="badge-name">Windmill</div><div class="badge-height">20 m</div></div></div>
+      <div class="badge-item"><img src="assets/leaning_tower.png" class="badge-icon" alt="Leaning Tower of Pisa"><div><div class="badge-name">Leaning Tower of Pisa</div><div class="badge-height">56 m</div></div></div>
+      <div class="badge-item"><img src="assets/statue_of_liberty.png" class="badge-icon" alt="Statue of Liberty"><div><div class="badge-name">Statue of Liberty</div><div class="badge-height">93 m</div></div></div>
+      <div class="badge-item"><img src="assets/pyramid.png" class="badge-icon" alt="Great Pyramid"><div><div class="badge-name">Great Pyramid</div><div class="badge-height">139 m</div></div></div>
+      <div class="badge-item"><img src="assets/golden_gate_bridge.png" class="badge-icon" alt="Golden Gate Bridge"><div><div class="badge-name">Golden Gate Bridge</div><div class="badge-height">227 m</div></div></div>
+      <div class="badge-item"><img src="assets/eiffel_tower.png" class="badge-icon" alt="Eiffel Tower"><div><div class="badge-name">Eiffel Tower</div><div class="badge-height">330 m</div></div></div>
+      <div class="badge-item"><img src="assets/burj_khalifa.png" class="badge-icon" alt="Burj Khalifa"><div><div class="badge-name">Burj Khalifa</div><div class="badge-height">828 m</div></div></div>
+      <div class="badge-item"><img src="assets/mount_everest.png" class="badge-icon" alt="Mount Everest"><div><div class="badge-name">Mount Everest</div><div class="badge-height">8,848 m</div></div></div>
+    </div>
+  </section>
+</div>
+
+<!-- ── SUPPORT ── -->
+<section>
+  <p class="section-label">Support</p>
+  <h2 class="section-title">Need help?</h2>
+  <div class="support-card">
+    <h3>Contact</h3>
+    <p>
+      Found a bug, have a feature request, or just want to say hi?
+      Reach out via email — I'm a solo developer and read every message.
+    </p>
+    <a class="support-link" href="mailto:52tribuene-biographie@icloud.com">Send a message</a>
+  </div>
+  <div class="support-card" style="margin-top: 1rem;">
+    <h3>Privacy</h3>
+    <p>
+      Diaper Tower stores all data locally on your device. No account required.
+      No data is sent to any server. No tracking. <a href="#datenschutz" style="color: var(--accent);">Full privacy policy ↓</a>
+    </p>
+  </div>
+</section>
+
+<!-- ── DATENSCHUTZ ── -->
+<section id="datenschutz">
+  <p class="section-label">Datenschutz</p>
+  <h2 class="section-title">Datenschutzerklärung</h2>
+
+  <div class="support-card">
+    <h3>1. Verantwortlicher</h3>
+    <p>
+      Yannik Braun<br>
+      Claudiusstraße 16, 70193 Stuttgart<br>
+      E-Mail: <a href="mailto:52tribuene-biographie@icloud.com" style="color: var(--accent); text-decoration: none;">52tribuene-biographie@icloud.com</a><br>
+      Telefon: <a href="tel:+491775537666" style="color: var(--accent); text-decoration: none;">+49 177 5537666</a>
+    </p>
+  </div>
+
+  <div class="support-card" style="margin-top: 1rem;">
+    <h3>2. Hosting (GitHub Pages)</h3>
+    <p>
+      Diese Website wird über GitHub Pages gehostet. Anbieter ist GitHub Inc.,
+      88 Colin P Kelly Jr St, San Francisco, CA 94107, USA (EU-Vertreter: GitHub BV,
+      Vijzelstraat 68–72, 1017 HL Amsterdam, Niederlande).
+    </p>
+    <p>
+      Beim Aufruf dieser Website erfasst GitHub automatisch Serverprotokolldaten,
+      darunter IP-Adressen, Browser-Typ, aufgerufene Seiten und Zugriffszeit.
+      Diese Daten werden auf Servern in den USA verarbeitet. Rechtsgrundlage ist
+      Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse am sicheren Betrieb der Website).
+    </p>
+    <p>
+      Weitere Informationen: <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement"
+      style="color: var(--accent); text-decoration: none;" target="_blank" rel="noopener">GitHub Privacy Statement</a>
+    </p>
+  </div>
+
+  <div class="support-card" style="margin-top: 1rem;">
+    <h3>3. App – Diaper Tower</h3>
+    <p>
+      Die App erhebt keinerlei personenbezogene Daten. Alle eingegebenen Daten
+      (Windelwechsel, Inventar, Kindsnamen) werden ausschließlich lokal auf Ihrem
+      Gerät mit Core Data gespeichert. Es findet keine Übertragung an externe Server statt.
+      Es werden keine Analyse- oder Tracking-Dienste eingesetzt. Es sind kein Konto
+      und keine Registrierung erforderlich.
+    </p>
+    <p>
+      Kamerazugriff: Die App fordert optional Kamerazugriff an, um Barcodes von
+      Windelpackungen zu scannen. Kamerabilder werden weder gespeichert noch übertragen.
+    </p>
+  </div>
+
+  <div class="support-card" style="margin-top: 1rem;">
+    <h3>4. Cookies und Tracking</h3>
+    <p>
+      Diese Website verwendet keine Cookies und keine Tracking- oder Analysedienste.
+      Es werden keine Daten zu Werbezwecken erhoben oder weitergegeben.
+    </p>
+  </div>
+
+  <div class="support-card" style="margin-top: 1rem;">
+    <h3>5. Ihre Rechte (Art. 15–21 DSGVO)</h3>
+    <p>
+      Sie haben das Recht auf Auskunft über Ihre gespeicherten Daten (Art. 15),
+      Berichtigung (Art. 16), Löschung (Art. 17), Einschränkung der Verarbeitung
+      (Art. 18), Datenübertragbarkeit (Art. 20) sowie Widerspruch (Art. 21).
+      Da weder die App noch diese Website personenbezogene Daten speichert oder
+      verarbeitet, fallen diese Rechte praktisch nicht an.
+    </p>
+    <p>
+      Zur Ausübung Ihrer Rechte wenden Sie sich bitte an:
+      <a href="mailto:52tribuene-biographie@icloud.com" style="color: var(--accent); text-decoration: none;">52tribuene-biographie@icloud.com</a>
+    </p>
+  </div>
+
+  <div class="support-card" style="margin-top: 1rem;">
+    <h3>6. Beschwerderecht bei der Aufsichtsbehörde</h3>
+    <p>
+      Sie haben das Recht, sich bei der zuständigen Datenschutz-Aufsichtsbehörde
+      zu beschweren (Art. 77 DSGVO):
+    </p>
+    <p>
+      Der Landesbeauftragte für den Datenschutz und die Informationsfreiheit Baden-Württemberg<br>
+      Lautenschlagerstraße 20, 70173 Stuttgart<br>
+      <a href="https://www.baden-wuerttemberg.datenschutz.de" style="color: var(--accent); text-decoration: none;" target="_blank" rel="noopener">www.baden-wuerttemberg.datenschutz.de</a>
+    </p>
+  </div>
+</section>
+
+<!-- ── IMPRESSUM ── -->
+<section id="impressum">
+  <p class="section-label">Impressum</p>
+  <h2 class="section-title">Angaben gemäß § 5 TMG</h2>
+  <div class="support-card">
+    <h3>Verantwortlich</h3>
+    <p>
+      Yannik Braun<br>
+      Claudiusstraße 16<br>
+      70193 Stuttgart<br>
+      Deutschland
+    </p>
+  </div>
+  <div class="support-card" style="margin-top: 1rem;">
+    <h3>Kontakt</h3>
+    <p>
+      Telefon: <a href="tel:+491775537666" style="color: var(--accent); text-decoration: none;">+49 177 5537666</a><br>
+      E-Mail: <a href="mailto:52tribuene-biographie@icloud.com" style="color: var(--accent); text-decoration: none;">52tribuene-biographie@icloud.com</a>
+    </p>
+  </div>
+  <div class="support-card" style="margin-top: 1rem;">
+    <h3>Haftung für Inhalte</h3>
+    <p>
+      Als Diensteanbieter sind wir gemäß § 7 Abs. 1 TMG für eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich.
+      Nach §§ 8 bis 10 TMG sind wir als Diensteanbieter jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen.
+    </p>
+  </div>
+</section>
+
+<footer>
+  <p>© 2026 Diaper Tower · All rights reserved · <a href="mailto:52tribuene-biographie@icloud.com" style="color: var(--accent); text-decoration: none;">Contact</a> · <a href="#impressum" style="color: var(--accent); text-decoration: none;">Impressum</a> · <a href="#datenschutz" style="color: var(--accent); text-decoration: none;">Datenschutz</a></p>
+</footer>
+
+<script>
+  // generate twinkling stars
+  const container = document.getElementById('stars');
+  if (container) {
+    for (let i = 0; i < 60; i++) {
+      const s = document.createElement('div');
+      s.className = 'star';
+      s.style.left = Math.random() * 100 + '%';
+      s.style.top = Math.random() * 100 + '%';
+      s.style.animationDelay = (Math.random() * 3) + 's';
+      s.style.width = s.style.height = (Math.random() > 0.7 ? 4 : 2) + 'px';
+      container.appendChild(s);
+    }
+  }
+</script>
+</body>
+</html>
